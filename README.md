@@ -21,6 +21,5 @@ $validation->check(array('required','isInteger','minLen:1','maxLen:3'), $age, 'I
 - isInteger `是否為整數 ( 包含字串型態 )`
 - validIP `是否為正常IP`
 - validUrl `是否為可連結的網域名`
-- validEmail `是否為格式正常的email`
 
 * 附屬參數皆用 `:` 來分隔
