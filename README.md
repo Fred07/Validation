@@ -1,7 +1,11 @@
-# Example
+# 說明文件
 
-check( $rules = array(), $value, $error  )
+## Functions
+- initialize() `初始化`
+- check( $rules = array(), $value, $error  ) `設定針對value的驗證規則以及對應錯誤碼`
+- run() `執行驗證`
 
+## Example
 ```php
 $validation = new Validation();
 $validation->check(array('required','minLen:1','maxLen:20'), $username, 'Invalid Username!');
@@ -11,7 +15,7 @@ $error = $validation->run();
 ```
 `run()`將會回傳驗證過程中，驗證失敗時所對應的錯誤碼，若驗證全部通過，將回傳 `true`
 
-## Validation Method
+## Validation Rules
 - required `not null`
 - minLen `最小長度 ex. minLen:1`
 - maxLen `最大長度 ex. maxLen:20`
