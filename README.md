@@ -1,4 +1,4 @@
-# 說明文件
+# ReadMe
 
 ## Functions
 - initialize() `初始化`
