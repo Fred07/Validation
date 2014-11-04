@@ -1,6 +1,6 @@
 # Example
 
-`check( $rules = array(), $value, $error  )`
+check( $rules = array(), $value, $error  )
 
 ```php
 $validation = new Validation();
