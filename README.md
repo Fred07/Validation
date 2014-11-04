@@ -1,9 +1,15 @@
 # Example
+
+`check( $rules = array(), $value, $error  )`
+
 ```php
 $validation = new Validation();
 $validation->check(array('required','minLen:1','maxLen:20'), $username, 'Invalid Username!');
 $validation->check(array('required','isInteger','minLen:1','maxLen:3'), $age, 'Invalid Age');
+
+$error = $validation->run();
 ```
+`run()`將會回傳驗證過程中，驗證失敗時所對應的錯誤碼，若驗證全部通過，將回傳 `true`
 
 ## Validation Method
 - required `not null`
