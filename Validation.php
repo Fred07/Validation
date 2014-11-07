@@ -3,13 +3,15 @@
  * Created by PhpStorm.
  * User: Howard Wu
  * Desc: 批次驗證
+ * Version: 1.1
  * Date: 2014/10/30
  * Time: 上午 10:28
  */
 
-// 直接擴充驗證區function, 遵守命名規則(checker_), 就可以直接使用
-//Todo: error_rule 暫時拿掉功能 實作流程無法確定
+// 直接擴充驗證class 增加 function, 遵守命名規則( checker_規則名稱 ), 就可以直接使用
+//Todo: required 驗證到底要用empty 還是 is_null判斷
 //Todo: 是否把filter功能加進來? 還是應該獨立成2個library
+//Todo: date, time 驗證客製化
 class Validation {
 
     private $rule_queue;        // 要驗證的任務排列
@@ -19,6 +21,10 @@ class Validation {
     private $stepMode;          // 逐項檢查模式: true遇到錯誤就中止檢查, false全部rule檢查
 
     const WARN_MISSING_PARAMETER = 'missing parameter';
+    const WARN_MISSING_ERR_CODE = 'can not get any error code';
+    const WARN_INVALID_RULE = 'can not find validation method: ';
+    const WARN_UNDEFINED = 'Something wrong!';
+
 
     // constructor
     function Validation() {
@@ -35,12 +41,14 @@ class Validation {
         $this->stepMode = true;
     }
 
+    // Setter
     // 改變模式
-    public function stepMode( $bol ) {
+    public function setStepMode( $bol ) {
         $this->stepMode = (( $bol )?true:false);
     }
 
     // Getter
+    // @param $index int: 選擇特定error_code
     public function getErrorCode( $index = '' ) {
         if ( $index AND isset($this->error_code[$index]) ) {
             return $this->error_code[$index];
@@ -49,26 +57,36 @@ class Validation {
     }
 
     // Getter
-    /*public function getErrorRule() {
+    // @param $index int: 選擇特定error_rule
+    public function getErrorRule( $index = '' ) {
+        if ( $index AND isset($this->error_rule[$index]) ) {
+            return $this->error_rule[$index];
+        }
         return $this->error_rule;
-    }*/
+    }
 
     // not yet!! 最後輸出的格式
     // Get error_code and error_rule in format
-    /*public function getReadableError() {
+    public function getReadableError() {
         if ( !$this->valid_flag ) {
-            $result = array();
-            foreach( $this->error_code AS $index => $err_code ) {
-                array_push($result,  'error_code: ' . $err_code);
+            if ( sizeof($this->error_code) === sizeof($this->error_rule) ) {
+
+                $result = array();
+                foreach( $this->error_code AS $index => $err_code ) {
+                    array_push($result,  'error_code: ' . $err_code . ' error_rule: ' . $this->error_rule[$index] . PHP_EOL);
+                }
+                return $result;
+
+            } else {
+                throw new Exception(self::WARN_UNDEFINED);
             }
-            return $result;
         } else {
             //no error, do nothing!!
         }
-    }*/
+    }
 
     // 加入檢查規則項目到 rule_queue
-    public function check ( $rules = array(), $value, $error ) {
+    public function check( $rules = array(), $value, $error ) {
 
         array_push($this->rule_queue, array('rules'=>$rules, 'value'=>$value, 'error'=>$error) );
     }
@@ -82,10 +100,11 @@ class Validation {
             $error = $bundle['error'];
             foreach( $bundle['rules'] AS $rule ) {  //每一個 rule驗證項目
 
-                // 驗證沒過, 寫入error_code
+                // 驗證沒過, 紀錄error_code, error_rule
                 // stepMode 模式下, 直接返回
                 if ( !$this->switchToChecker($rule, $value) ) {
                     array_push($this->error_code, $error);
+                    array_push($this->error_rule, $rule);
                     $this->valid_flag = false;
                     if ($this->stepMode) {
                         return $error;
@@ -93,13 +112,20 @@ class Validation {
                 }
             }
         }
-        return $this->valid_flag;
+
+        // 回傳第一個error_code
+        if ( isset($this->error_code[0]) ) {
+            return $this->error_code[0];
+        } else {
+            throw new Exception(self::WARN_MISSING_ERR_CODE);
+        }
+
     }
 
     // 分配器
     // 呼叫對應的驗證function
-    private function switchToChecker( $rule, $value )
-    {
+    private function switchToChecker( $rule, $value ) {
+
         // 某些特殊驗證由 ':' 來區格驗證規則和驗證值. ex. minLen:5
         // 切割出規則和驗證值, $rule_couple[0]:驗證規則,  $rule_couple[1]:驗證值, 類推.
         $rule_couple = explode(':', $rule);
@@ -109,7 +135,7 @@ class Validation {
         if ( method_exists(__CLASS__, $method) ) {
             return $this->$method( $value, $rule_couple );
         } else {
-            throw new Exception('can not find validation method: ' . $rule_couple[0]);
+            throw new Exception(self::WARN_INVALID_RULE . $rule_couple[0]);
         }
     }
 
@@ -121,9 +147,19 @@ class Validation {
     // @param $param array: 參數包裹, [0]=>驗證方法, [1]=>驗證參數1, [2]=>驗證參數2, etc...
     // @return boolean: 是否正確, true:正確
 
-    // Required (not null)
+    // Required (not empty)
     protected function checker_required( $value, $param ) {
-        return ( is_null($value) )?false:true;
+        //return ( is_null($value) )?false:true;
+        return ( empty($value) )?false:true;
+    }
+
+    // Equal (string)
+    protected function checker_equalsTo( $value, $param ) {
+        if (!isset($param[1])) {
+            throw new Exception(self::WARN_MISSING_PARAMETER);
+        }
+        $comp_value = $param[1];
+        return ( $value === $comp_value )?true:false;
     }
 
     // 最小長度
