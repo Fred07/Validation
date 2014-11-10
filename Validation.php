@@ -65,6 +65,10 @@ class Validation {
         return $this->error_rule;
     }
 
+    public function getValidFlag() {
+        return $this->valid_flag;
+    }
+
     // not yet!! 最後輸出的格式
     // Get error_code and error_rule in format
     public function getReadableError() {
@@ -101,7 +105,7 @@ class Validation {
             foreach( $bundle['rules'] AS $rule ) {  //每一個 rule驗證項目
 
                 // 驗證沒過, 紀錄error_code, error_rule
-                // stepMode 模式下, 直接返回
+                // stepMode 模式下, 直接返回error_code
                 if ( !$this->switchToChecker($rule, $value) ) {
                     array_push($this->error_code, $error);
                     array_push($this->error_rule, $rule);
@@ -113,11 +117,11 @@ class Validation {
             }
         }
 
-        // 回傳第一個error_code
+        // 回傳驗證結果, 如果有error_code則回傳, 沒有則回傳flag
         if ( isset($this->error_code[0]) ) {
             return $this->error_code[0];
         } else {
-            throw new Exception(self::WARN_MISSING_ERR_CODE);
+            return $this->getValidFlag();
         }
 
     }
