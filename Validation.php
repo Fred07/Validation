@@ -26,7 +26,7 @@ class Validation {
     const WARN_UNDEFINED = 'Something wrong!';
 
     // constructor
-    protected function Validation() {
+    function Validation() {
         $this->initialize();
     }
 
