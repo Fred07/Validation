@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: Howard Wu
  * Desc: 批次驗證
- * Version: 1.1
+ * Version: 1.2
  * Date: 2014/10/30
  * Time: 上午 10:28
  */
@@ -14,20 +14,19 @@
 //Todo: date, time 驗證客製化
 class Validation {
 
-    private $rule_queue;        // 要驗證的任務排列
-    private $error_code;        // 驗證失敗的錯誤碼
-    private $error_rule;        // 驗證失敗的驗證名稱    ex.'minLen' , 表示未通過最小值檢驗
-    private $valid_flag;        // 驗證狀態, true 正常
-    private $stepMode;          // 逐項檢查模式: true遇到錯誤就中止檢查, false全部rule檢查
+    protected $rule_queue;        // 要驗證的任務排列
+    protected $error_code;        // 驗證失敗的錯誤碼
+    protected $error_rule;        // 驗證失敗的驗證名稱    ex.'minLen' , 表示未通過最小值檢驗
+    protected $valid_flag;        // 驗證狀態, true 正常
+    protected $stepMode;          // 逐項檢查模式: true遇到錯誤就中止檢查, false全部rule檢查
 
     const WARN_MISSING_PARAMETER = 'missing parameter';
     const WARN_MISSING_ERR_CODE = 'can not get any error code';
     const WARN_INVALID_RULE = 'can not find validation method: ';
     const WARN_UNDEFINED = 'Something wrong!';
 
-
     // constructor
-    function Validation() {
+    protected function Validation() {
         $this->initialize();
     }
 
@@ -69,7 +68,6 @@ class Validation {
         return $this->valid_flag;
     }
 
-    // not yet!! 最後輸出的格式
     // Get error_code and error_rule in format
     public function getReadableError() {
         if ( !$this->valid_flag ) {
@@ -128,7 +126,7 @@ class Validation {
 
     // 分配器
     // 呼叫對應的驗證function
-    private function switchToChecker( $rule, $value ) {
+    protected function switchToChecker( $rule, $value ) {
 
         // 某些特殊驗證由 ':' 來區格驗證規則和驗證值. ex. minLen:5
         // 切割出規則和驗證值, $rule_couple[0]:驗證規則,  $rule_couple[1]:驗證值, 類推.
@@ -136,7 +134,7 @@ class Validation {
         $method = 'checker_' . $rule_couple[0];
 
         // 呼叫前確認方法存在
-        if ( method_exists(__CLASS__, $method) ) {
+        if ( method_exists($this, $method) ) {      // __CLASS__ 改為 $this, 否則子類別無法偵測到
             return $this->$method( $value, $rule_couple );
         } else {
             throw new Exception(self::WARN_INVALID_RULE . $rule_couple[0]);
