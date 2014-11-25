@@ -3,15 +3,13 @@
  * Created by PhpStorm.
  * User: Howard Wu
  * Desc: 批次驗證
- * Version: 1.2
+ *       經由繼承擴充增加驗證方法
+ *       遵守命名規則( checker_規則名稱 )
+ * Version: 1.2.2
  * Date: 2014/10/30
  * Time: 上午 10:28
  */
 
-// 直接擴充驗證class 增加 function, 遵守命名規則( checker_規則名稱 ), 就可以直接使用
-//Todo: required 驗證到底要用empty 還是 is_null判斷
-//Todo: 是否把filter功能加進來? 還是應該獨立成2個library
-//Todo: date, time 驗證客製化
 class Validation {
 
     protected $rule_queue;        // 要驗證的任務排列
@@ -20,9 +18,9 @@ class Validation {
     protected $valid_flag;        // 驗證狀態, true 正常
     protected $stepMode;          // 逐項檢查模式: true遇到錯誤就中止檢查, false全部rule檢查
 
-    const WARN_MISSING_PARAMETER = 'missing parameter';
-    const WARN_MISSING_ERR_CODE = 'can not get any error code';
-    const WARN_INVALID_RULE = 'can not find validation method: ';
+    const WARN_MISSING_PARAMETER = 'Missing parameter';
+    const WARN_MISSING_ERR_CODE = 'Can not get any error code';
+    const WARN_INVALID_RULE = 'Can not find validation method: ';
     const WARN_UNDEFINED = 'Something wrong!';
 
     // constructor
@@ -142,6 +140,7 @@ class Validation {
     }
 
 
+
     // 各種驗證模式
     // 可繼承類別擴充新的驗證方法
     // checker_ 開頭
@@ -200,9 +199,10 @@ class Validation {
         return ( (int)$value <= $max )?true:false;
     }
 
+    // ex. 2014/10/15, 2014-05-34
     protected function checker_dateFormat( $date, $param ) {
         //return ( preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $date) )?true:false;
-        return ( preg_match('/^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])$/', $date) )?true:false;
+        return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])$/', $date) )?true:false;
     }
 
     protected function checker_timeFormat( $time, $param ) {
@@ -211,7 +211,7 @@ class Validation {
     }
 
     protected function checker_dateTimeFormat( $dateTime, $param ) {
-        return ( preg_match('/^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\s(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $dateTime) )?true:false;
+        return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])\s(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $dateTime) )?true:false;
     }
 
     // 數字, 含字串型態, 含浮點數
@@ -241,5 +241,15 @@ class Validation {
     // Email
     protected function checker_validEmail( $email, $param ) {
         return ( filter_var($email, FILTER_VALIDATE_EMAIL) )?true:false;
+    }
+
+    // Regular Expression
+    // @param[1] string: regular expression
+    protected function checker_regExp( $value, $param ) {
+        if ( !isset($param[1]) ) {
+            throw new Exception(self::WARN_MISSING_PARAMETER);
+        }
+        $regExp = $param[1];
+        return ( preg_match($regExp, $value) )?true:false;
     }
 }
