@@ -1,9 +1,22 @@
 # Documentation
 
+## Mode
+###逐項檢查模式(Step Mode)
+- 預設為此模式，驗證過程中，驗證失敗將停止驗證流程，並回傳驗證失敗訊息
+
+###非逐項檢查模式
+- 此模式將會跑完所有驗證，並統一記錄起來
+
 ## Functions
 - initialize() `初始化`
 - check( $rules = array(), $value, $error  ) `設定針對value的驗證規則以及對應錯誤碼`
 - run() `執行驗證`
+
+- setStepMode($boolean) `使用逐項檢查模式`
+- getErrorCode($index) `取得錯誤碼`
+- getErrorRule($index) `取得未通過的驗證方法`
+- getReadableError() `取得所有錯誤訊息(非逐項模式)`
+
 
 ## Example
 ```php
@@ -34,5 +47,11 @@ if ($error !== true  ) {
 - validIP `是否為正常IP`
 - validUrl `是否為可連結的網域名`
 - validEmail `是否為格式正常的email`
+- regExp `是否符合自自訂的regular expression`
 
 附屬參數皆用 `:` 來分隔
+
+## 擴充類別
+繼承Validation
+自訂驗證方法，命名名稱checker_{RULE_NAME}
+回傳boolean
