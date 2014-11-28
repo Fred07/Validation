@@ -244,12 +244,22 @@ class Validation {
     }
 
     // Regular Expression
-    // @param[1] string: regular expression
+    // @param[1] String: regular expression
     protected function checker_regExp( $value, $param ) {
         if ( !isset($param[1]) ) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
         }
         $regExp = $param[1];
         return ( preg_match($regExp, $value) )?true:false;
+    }
+
+    // 包含字串
+    // @param[1] String: 要搜尋的字串
+    protected function checker_contains( $value, $param ) {
+        if ( !isset($param[1]) ) {
+            throw new Exception(self::WARN_MISSING_PARAMETER);
+        }
+        $needle = $param[1];
+        return ( stripos($value, $needle) !== false )?true:false;
     }
 }
