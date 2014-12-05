@@ -5,7 +5,7 @@
  * Desc: 批次驗證
  *       經由繼承擴充增加驗證方法
  *       遵守命名規則( checker_規則名稱 )
- * Version: 1.2.2
+ * Version: 1.3
  * Date: 2014/10/30
  * Time: 上午 10:28
  */
@@ -62,7 +62,8 @@ class Validation {
         return $this->error_rule;
     }
 
-    public function getValidFlag() {
+    // Get validation pass or fail
+    public function isAllValid() {
         return $this->valid_flag;
     }
 
@@ -81,7 +82,7 @@ class Validation {
                 throw new Exception(self::WARN_UNDEFINED);
             }
         } else {
-            //no error, do nothing!!
+            // no error, do nothing!!
         }
     }
 
@@ -117,7 +118,7 @@ class Validation {
         if ( isset($this->error_code[0]) ) {
             return $this->error_code[0];
         } else {
-            return $this->getValidFlag();
+            return $this->isAllValid();
         }
 
     }
@@ -179,6 +180,14 @@ class Validation {
         }
         $max = $param[1];
         return ( mb_strlen($value, 'utf8') <= $max )?true:false;
+    }
+
+    protected function checker_len( $value, $param ) {
+        if (!isset($param[1])) {
+            throw new Exception(self::WARN_MISSING_PARAMETER);
+        }
+        $len = $param[1];
+        return ( mb_strlen($value) == $len )?true:false;
     }
 
     // 最小值
@@ -255,11 +264,39 @@ class Validation {
 
     // 包含字串
     // @param[1] String: 要搜尋的字串
+    // @param[2] boolean:大小寫偵測
     protected function checker_contains( $value, $param ) {
+
         if ( !isset($param[1]) ) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
         }
+        if ( isset($param[2]) ) {
+            $sensitive = $param[2];
+        } else {
+            $sensitive = false;
+        }
+
         $needle = $param[1];
-        return ( stripos($value, $needle) !== false )?true:false;
+
+        if ( $sensitive ) {
+            return ( strpos($value, $needle) !== false )?true:false;        // 使用 strpos()
+        } else {
+            return ( stripos($value, $needle) !== false )?true:false;       // 使用 stripos()
+        }
+    }
+
+    // 是否在選項範圍內
+    // @param[n]: String: 選項值
+    protected function checker_choice( $value, $param ) {
+        if ( !isset($param[1]) ) {
+            throw new Exception(self::WARN_MISSING_PARAMETER);
+        }
+
+        for( $i=1; $i <= sizeof($param) - 1 ;$i++ ) {
+            if ( $param[$i] == $value ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
