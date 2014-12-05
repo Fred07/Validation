@@ -20,9 +20,12 @@
 
 ## Example
 ```php
+$username = 'Five Wu';
+$age = 1001;
+
 $validation = new Validation();
 $validation->check(array('required','minLen:1','maxLen:20'), $username, 'Invalid Username!');
-$validation->check(array('required','isInteger','minLen:1','maxLen:3'), $age, 'Invalid Age');
+$validation->check(array('required','isInteger','minLen:1','maxLen:3'), $age, 'Invalid Age!');
 // more rules...
 
 $error = $validation->run();
@@ -30,6 +33,14 @@ if ($error !== true  ) {
   echo $error;
 }
 ```
+
+####Result:
+```
+Invalid Age!
+```
+username則通過驗證
+但 1001 超出驗證設定的範圍 (maxLen:3)
+
 `run()`將會回傳驗證過程中，驗證失敗時所對應的錯誤碼，若驗證全部通過，將回傳 `true`
 
 ## Validation Rules
