@@ -9,7 +9,7 @@
  * Date: 2014/10/30
  * Time: 上午 10:28
  */
-
+//Todo : 加入 EnableEmpty屬性? 提供各個檢查項目可以為空的情形?
 class Validation {
 
     protected $rule_queue;        // 要驗證的任務排列
@@ -267,7 +267,7 @@ class Validation {
     // @param[2] boolean:大小寫偵測
     protected function checker_contains( $value, $param ) {
 
-        if ( !isset($param[1]) ) {
+        if ( !isset($param[1]) OR empty($param[1]) ) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
         }
         if ( isset($param[2]) ) {
