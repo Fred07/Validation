@@ -65,4 +65,4 @@ username則通過驗證
 ## 擴充類別
 繼承Validation
 自訂驗證方法，命名名稱checker_{RULE_NAME}
-回傳boolean
+回傳boolean (true or false)
