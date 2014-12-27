@@ -3,6 +3,7 @@
 ## Mode
 ###逐項檢查模式(Step Mode)
 - 預設為此模式，驗證過程中，驗證失敗將停止驗證流程，並回傳驗證失敗訊息
+  Process of validation stop and return while first validation error occur. (Default mode)
 
 ###非逐項檢查模式
 - 此模式將會跑完所有驗證，並統一記錄起來
@@ -22,10 +23,12 @@
 ```php
 $username = 'Five Wu';
 $age = 1001;
+$birthday = '2001-10-11';
 
 $validation = new Validation();
 $validation->check(array('required','minLen:1','maxLen:20'), $username, 'Invalid Username!');
 $validation->check(array('required','isInteger','minLen:1','maxLen:3'), $age, 'Invalid Age!');
+$validation->check(array('required','dateFormat'), $birthday, 'Invalid Date Format');
 // more rules...
 
 $error = $validation->run();
@@ -62,7 +65,7 @@ username則通過驗證
 
 附屬參數皆用 `:` 來分隔
 
-## 擴充類別
+## Class to Extend
 繼承Validation
 自訂驗證方法，命名名稱checker_{RULE_NAME}
-回傳boolean (true or false)
+return boolean.
