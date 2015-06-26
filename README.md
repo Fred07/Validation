@@ -3,6 +3,7 @@
 ## Mode
 ###逐項檢查模式(Step Mode)
 - 預設為此模式，驗證過程中，驗證失敗將停止驗證流程，並回傳驗證失敗訊息
+  
   Process of validation stop and return while first validation error occur. (Default mode)
 
 ###非逐項檢查模式
