@@ -5,11 +5,14 @@
  * Desc: 批次驗證
  *       經由繼承擴充增加驗證方法
  *       遵守命名規則( checker_規則名稱 )
- * Version: 1.3
- * Date: 2014/10/30
- * Time: 上午 10:28
+ * Version: 1.4
+ * Date: 2015/09/19
+ * Time: 上午 16:00
+ * Note: function renaming, setter and getter addition
  */
-//Todo : 加入 EnableEmpty屬性? 提供各個檢查項目可以為空的情形?
+
+namespace App\Library;
+
 class Validation {
 
     protected $rule_queue;        // 要驗證的任務排列
@@ -24,8 +27,8 @@ class Validation {
     const WARN_UNDEFINED = 'Something wrong!';
 
     // constructor
-    function Validation() {
-        $this->initialize();
+    function __construct() {
+        $this->initialize();   
     }
 
     // Default value for member variable
@@ -42,6 +45,10 @@ class Validation {
     // 改變模式
     public function setStepMode( $bol ) {
         $this->stepMode = (( $bol )?true:false);
+    }
+
+    protected function setValidFlag( $bol ) {
+        $this->valid_flag = ( $bol )?true:false;
     }
 
     // Getter
@@ -65,6 +72,10 @@ class Validation {
     // Get validation pass or fail
     public function isAllValid() {
         return $this->valid_flag;
+    }
+
+    public function isStepMode() {
+        return $this->stepMode;
     }
 
     // Get error_code and error_rule in format
@@ -103,11 +114,11 @@ class Validation {
 
                 // 驗證沒過, 紀錄error_code, error_rule
                 // stepMode 模式下, 直接返回error_code
-                if ( !$this->switchToChecker($rule, $value) ) {
+                if ( !$this->validate($rule, $value) ) {
                     array_push($this->error_code, $error);
                     array_push($this->error_rule, $rule);
-                    $this->valid_flag = false;
-                    if ($this->stepMode) {
+                    $this->setValidFlag(false);
+                    if ($this->isStepMode()) {
                         return $error;
                     }
                 }
@@ -125,7 +136,7 @@ class Validation {
 
     // 分配器
     // 呼叫對應的驗證function
-    protected function switchToChecker( $rule, $value ) {
+    protected function validate( $rule, $value ) {
 
         // 某些特殊驗證由 ':' 來區格驗證規則和驗證值. ex. minLen:5
         // 切割出規則和驗證值, $rule_couple[0]:驗證規則,  $rule_couple[1]:驗證值, 類推.
@@ -210,16 +221,16 @@ class Validation {
 
     // ex. 2014/10/15, 2014-05-34
     protected function checker_dateFormat( $date, $param ) {
-        //return ( preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $date) )?true:false;
+
         return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])$/', $date) )?true:false;
     }
 
     protected function checker_timeFormat( $time, $param ) {
-        //return ( preg_match('/^\d{2}:\d{2}:\d{2}$/', $time) )?true:false;
         return ( preg_match('/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $time) )?true:false;
     }
 
     protected function checker_dateTimeFormat( $dateTime, $param ) {
+
         return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])\s(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $dateTime) )?true:false;
     }
 
@@ -228,6 +239,7 @@ class Validation {
         return ( is_numeric($value) )?true:false;
     }
 
+    // 字串為字母數字
     protected function checker_isAlphaNumeric( $value, $param ) {
         return ( ctype_alnum($value) )?true:false;
     }
