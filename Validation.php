@@ -11,8 +11,6 @@
  * Note: function renaming, setter and getter addition
  */
 
-namespace App\Library;
-
 class Validation {
 
     protected $rule_queue;        // 要驗證的任務排列
