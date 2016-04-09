@@ -4,8 +4,8 @@ namespace Fred;
 /**
  * User: Howard Wu
  * Desc: change exception wording
-         change comments format
-         change variable naming
+ *       change comments format
+ *       change variable naming
  * Version: 1.5
  * Date: 2016/04/10
  */
