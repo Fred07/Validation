@@ -77,11 +77,9 @@ class Validation {
      * @return string
      * @throws Exception
      */
-    public function getErrorCode( $index = '' ) {
+    public function getErrorCode( $index = 0 ) {
         if ( $index AND isset($this->errorCode[$index]) ) {
             return $this->errorCode[$index];
-        } else {
-            throw new Exception('Invalid error index');
         }
         return $this->errorCode;
     }

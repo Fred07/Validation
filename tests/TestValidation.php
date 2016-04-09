@@ -1,4 +1,7 @@
 <?php
+use Fred\Validation;
+
+require_once("Validation.php");
 
 class TestValidation extends PHPUnit_Framework_TestCase
 {
