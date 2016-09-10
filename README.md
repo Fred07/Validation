@@ -70,3 +70,11 @@ username則通過驗證
 繼承Validation
 自訂驗證方法，命名名稱checker_{RULE_NAME}
 return boolean.
+
+
+## UnitTest
+`composer update`
+
+`codecept bootstrap`
+
+`codecept build`
