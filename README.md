@@ -78,3 +78,10 @@ return boolean.
 `codecept bootstrap`
 
 `codecept build`
+
+
+add below lines to tests/_bootstrap.php
+```
+require(__DIR__.'/../vendor/autoload.php');
+require(__DIR__.'/../Validation.php');
+```
