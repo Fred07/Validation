@@ -1,4 +1,7 @@
 <?php
+use Fred\Validation;
+
+require_once("Validation.php");
 
 class ValidationTest extends \Codeception\Test\Unit
 {

@@ -1,89 +1,133 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Howard Wu
- * Desc: 批次驗證
- *       經由繼承擴充增加驗證方法
- *       遵守命名規則( checker_規則名稱 )
- * Version: 1.4
- * Date: 2015/09/19
- * Time: 上午 16:00
- * Note: function renaming, setter and getter addition
- */
+namespace Fred;
 
+/**
+ * User: Howard Wu
+ * Desc: change exception wording
+ *       change comments format
+ *       change variable naming
+ * Version: 1.5
+ * Date: 2016/04/10
+ */
 class Validation {
 
-    protected $rule_queue;        // 要驗證的任務排列
-    protected $error_code;        // 驗證失敗的錯誤碼
-    protected $error_rule;        // 驗證失敗的驗證名稱    ex.'minLen' , 表示未通過最小值檢驗
-    protected $valid_flag;        // 驗證狀態, true 正常
-    protected $stepMode;          // 逐項檢查模式: true遇到錯誤就中止檢查, false全部rule檢查
+    /**
+     * 要驗證的任務排列
+     */
+    protected $ruleQueue;
+
+    /**
+     * 驗證失敗的錯誤碼
+     */
+    protected $errorCode;
+
+    /**
+     * 驗證失敗的驗證名稱
+     * ex.'minLen' , 表示未通過最小值檢驗
+     */
+    protected $errorRule;
+
+    /**
+     * 驗證結果
+     */
+    protected $validFlag;
+
+    /**
+     * 逐項檢查模式: 遇到錯誤立即中止檢查
+     */
+    protected $stepMode;
 
     const WARN_MISSING_PARAMETER = 'Missing parameter';
     const WARN_MISSING_ERR_CODE = 'Can not get any error code';
     const WARN_INVALID_RULE = 'Can not find validation method: ';
-    const WARN_UNDEFINED = 'Something wrong!';
+    const WARN_UNDEFINED = 'Undefined error!';
 
-    // constructor
+    /**
+     * Constructor
+     */
     function __construct() {
         $this->initialize();   
     }
 
-    // Default value for member variable
+    /**
+     * Default value for class members
+     */
     public function initialize() {
 
-        $this->rule_queue = array();
-        $this->error_code = array();
-        $this->error_rule = array();
-        $this->valid_flag = true;
+        $this->ruleQueue = array();
+        $this->errorCode = array();
+        $this->errorRule = array();
+        $this->validFlag = true;
         $this->stepMode = true;
     }
 
-    // Setter
-    // 改變模式
+    /**
+     * Set step mode
+     *
+     * @param bool $bol
+     */
     public function setStepMode( $bol ) {
         $this->stepMode = (( $bol )?true:false);
     }
 
-    protected function setValidFlag( $bol ) {
-        $this->valid_flag = ( $bol )?true:false;
-    }
-
-    // Getter
-    // @param $index int: 選擇特定error_code
-    public function getErrorCode( $index = '' ) {
-        if ( $index AND isset($this->error_code[$index]) ) {
-            return $this->error_code[$index];
+    /**
+     * Get error code
+     *
+     * @param int $index
+     * @return string
+     * @throws Exception
+     */
+    public function getErrorCode( $index = 0 ) {
+        if ( $index AND isset($this->errorCode[$index]) ) {
+            return $this->errorCode[$index];
         }
-        return $this->error_code;
+        return $this->errorCode;
     }
 
-    // Getter
-    // @param $index int: 選擇特定error_rule
+    /**
+     * Get error rule
+     * 
+     * @param int $index
+     * @return string
+     */
     public function getErrorRule( $index = '' ) {
-        if ( $index AND isset($this->error_rule[$index]) ) {
-            return $this->error_rule[$index];
+        if ( $index AND isset($this->errorRule[$index]) ) {
+            return $this->errorRule[$index];
         }
-        return $this->error_rule;
+        return $this->errorRule;
     }
 
-    // Get validation pass or fail
-    public function isAllValid() {
-        return $this->valid_flag;
+    /**
+     * Get validation pass or fail
+     *
+     * @return bool
+     */
+    public function isValid() {
+        return $this->validFlag;
     }
 
+    /**
+     * Is step mode or not
+     *
+     * @return bool
+     */
     public function isStepMode() {
         return $this->stepMode;
     }
 
-    // Get error_code and error_rule in format
+    /**
+     * Get errorCode and errorRule in format
+     *
+     * @return string
+     * @throws Exception
+     */
     public function getReadableError() {
-        if ( !$this->valid_flag ) {
-            if ( sizeof($this->error_code) === sizeof($this->error_rule) ) {
+        if ( !$this->validFlag ) {
+            if ( count($this->errorCode) === count($this->errorRule) ) {
 
                 $result = array();
-                foreach( $this->error_code AS $index => $err_code ) {
-                    array_push($result,  'error_code: ' . $err_code . ' error_rule: ' . $this->error_rule[$index] . PHP_EOL);
+                foreach( $this->errorCode AS $index => $err_code ) {
+                    array_push($result,  'errorCode: ' . $err_code . ' errorRule: ' . $this->errorRule[$index] . PHP_EOL);
                 }
                 return $result;
 
@@ -91,31 +135,40 @@ class Validation {
                 throw new Exception(self::WARN_UNDEFINED);
             }
         } else {
-            // no error, do nothing!!
+            // validation success, do nothing!
         }
     }
 
-    // 加入檢查規則項目到 rule_queue
+    /**
+     * Add rule into ruleQueue
+     * 
+     * @param array $rules checking rules
+     * @param mixed $value value to check
+     */
     public function check( $rules = array(), $value, $error ) {
 
-        array_push($this->rule_queue, array('rules'=>$rules, 'value'=>$value, 'error'=>$error) );
+        array_push($this->ruleQueue, array('rules'=>$rules, 'value'=>$value, 'error'=>$error) );
     }
 
-    // 執行檢查
+    /**
+     * Execute validation
+     *
+     * @return int/bool
+     */
     public function run() {
 
-        foreach( $this->rule_queue AS $bundle ) {   //每一組 check指令
+        foreach( $this->ruleQueue AS $bundle ) {
 
             $value = $bundle['value'];
             $error = $bundle['error'];
-            foreach( $bundle['rules'] AS $rule ) {  //每一個 rule驗證項目
+            foreach( $bundle['rules'] AS $rule ) {
 
-                // 驗證沒過, 紀錄error_code, error_rule
-                // stepMode 模式下, 直接返回error_code
+                // 驗證沒過, 紀錄errorCode, errorRule
+                // stepMode 模式下, 直接返回errorCode
                 if ( !$this->validate($rule, $value) ) {
-                    array_push($this->error_code, $error);
-                    array_push($this->error_rule, $rule);
-                    $this->setValidFlag(false);
+                    array_push($this->errorCode, $error);
+                    array_push($this->errorRule, $rule);
+                    $this->validFlag = true;
                     if ($this->isStepMode()) {
                         return $error;
                     }
@@ -123,17 +176,25 @@ class Validation {
             }
         }
 
-        // 回傳驗證結果, 如果有error_code則回傳, 沒有則回傳flag
-        if ( isset($this->error_code[0]) ) {
-            return $this->error_code[0];
+        // 回傳驗證結果, 如果有errorCode則回傳, 沒有則回傳flag
+        if ( isset($this->errorCode[0]) ) {
+            return $this->errorCode[0];
         } else {
-            return $this->isAllValid();
+            return $this->isValid();
         }
 
     }
 
-    // 分配器
-    // 呼叫對應的驗證function
+    /**
+     * Dispatcher
+     * 呼叫對應的驗證function
+     *
+     * @param string $rule
+     * @param mixed $value
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function validate( $rule, $value ) {
 
         // 某些特殊驗證由 ':' 來區格驗證規則和驗證值. ex. minLen:5
@@ -158,13 +219,25 @@ class Validation {
     // @param $param array: 參數包裹, [0]=>驗證方法, [1]=>驗證參數1, [2]=>驗證參數2, etc...
     // @return boolean: 是否正確, true:正確
 
-    // Required (not empty)
+    /**
+     * Required (empty or not)
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_required( $value, $param ) {
-        //return ( is_null($value) )?false:true;
         return ( empty($value) )?false:true;
     }
 
-    // Equal (string)
+    /**
+     * Equal (string)
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_equalsTo( $value, $param ) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -173,7 +246,14 @@ class Validation {
         return ( $value === $comp_value )?true:false;
     }
 
-    // 最小長度
+    /**
+     * Minimum length
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_minLen( $value, $param ) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -182,7 +262,14 @@ class Validation {
         return ( mb_strlen($value, 'utf8') >= $min )?true:false;
     }
 
-    // 最大長度
+    /**
+     * Maximum length
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_maxLen( $value, $param ) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -191,6 +278,14 @@ class Validation {
         return ( mb_strlen($value, 'utf8') <= $max )?true:false;
     }
 
+    /**
+     * length equals to
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_len( $value, $param ) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -199,7 +294,14 @@ class Validation {
         return ( mb_strlen($value) == $len )?true:false;
     }
 
-    // 最小值
+    /**
+     * Minimum value
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_minNumber($value, $param) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -208,7 +310,15 @@ class Validation {
         return ( (int)$value >= $min)?true:false;
     }
 
-    // 最大值
+    /**
+     * Maxinum value
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_maxNumber($value, $param) {
         if (!isset($param[1])) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -217,53 +327,127 @@ class Validation {
         return ( (int)$value <= $max )?true:false;
     }
 
-    // ex. 2014/10/15, 2014-05-34
+    /**
+     * Date format
+     * ex. 2014/10/15, 2014-05-34
+     *
+     * @param string $date
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_dateFormat( $date, $param ) {
 
         return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])$/', $date) )?true:false;
     }
 
+    /**
+     * Time format
+     *
+     * @param string $time
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_timeFormat( $time, $param ) {
         return ( preg_match('/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $time) )?true:false;
     }
 
+    /**
+     * Datetime format
+     * @param string $dateTime
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_dateTimeFormat( $dateTime, $param ) {
 
         return ( preg_match('/^\d{4}[\/\-](0[1-9]|1[0-2])[\/\-](0[1-9]|[1-2][0-9]|3[0-1])\s(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $dateTime) )?true:false;
     }
 
     // 數字, 含字串型態, 含浮點數
+    /**
+     * Numeric (including string and float)
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_isNumeric( $value, $param ) {
         return ( is_numeric($value) )?true:false;
     }
 
-    // 字串為字母數字
+    /**
+     * Alpha and numeric
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_isAlphaNumeric( $value, $param ) {
         return ( ctype_alnum($value) )?true:false;
     }
 
-    // 整數, 含字串型態
+    /**
+     * Integer (including string)
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_isInteger( $value, $param ) {
         return ( filter_var($value, FILTER_VALIDATE_INT) )?true:false;
     }
 
-    // IP
+    /**
+     * IP
+     *
+     * @param string $ip
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_validIP( $ip, $param ) {
         return ( filter_var($ip, FILTER_VALIDATE_IP) )?true:false;
     }
 
-    // Url, without http://
+    /**
+     * Url, without 'http://'
+     *
+     * @param string $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_validUrl( $url, $param ) {
         return ( checkdnsrr($url) !== false )?true:false;
     }
 
-    // Email
+    /**
+     * Email
+     *
+     * @param string $value
+     * @param array $param
+     *
+     * @return bool
+     */
     protected function checker_validEmail( $email, $param ) {
         return ( filter_var($email, FILTER_VALIDATE_EMAIL) )?true:false;
     }
 
-    // Regular Expression
-    // @param[1] String: regular expression
+    /**
+     * Validate with Regexp.
+     *     ex. $param[1]: regular expression
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_regExp( $value, $param ) {
         if ( !isset($param[1]) ) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
@@ -272,9 +456,18 @@ class Validation {
         return ( preg_match($regExp, $value) )?true:false;
     }
 
-    // 包含字串
-    // @param[1] String: 要搜尋的字串
-    // @param[2] boolean:大小寫偵測
+    // 
+    /**
+     * Contain string
+     *     ex. $param[1]: string to search
+     *         $param[2]: case sensitive or not
+     *
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_contains( $value, $param ) {
 
         if ( !isset($param[1]) OR empty($param[1]) ) {
@@ -295,14 +488,22 @@ class Validation {
         }
     }
 
-    // 是否在選項範圍內
-    // @param[n]: String: 選項值
+    /**
+     * Options
+     * ex. $param[n]: option value
+     * 
+     * @param mixed $value
+     * @param array $param
+     *
+     * @return bool
+     * @throws Exception
+     */
     protected function checker_choice( $value, $param ) {
         if ( !isset($param[1]) ) {
             throw new Exception(self::WARN_MISSING_PARAMETER);
         }
 
-        for( $i=1; $i <= sizeof($param) - 1 ;$i++ ) {
+        for( $i=1; $i <= count($param) - 1 ;$i++ ) {
             if ( $param[$i] == $value ) {
                 return true;
             }
