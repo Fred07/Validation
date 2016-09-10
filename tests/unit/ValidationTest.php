@@ -1,6 +1,6 @@
 <?php
 
-class TestValidation extends PHPUnit_Framework_TestCase
+class ValidationTest extends \Codeception\Test\Unit
 {
 
 	/**
