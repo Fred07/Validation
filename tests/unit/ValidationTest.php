@@ -278,6 +278,11 @@ class ValidationTest extends \Codeception\Test\Unit
 		$this->assertEquals($answer, $error2);
 	}
 
+	// for test, this must be failed to through unitTest
+	public function testToFailed(){
+		$this->assertTrue(false);
+	}
+
 	public function validationProvider() {
 		return array(
 			array(
